@@ -1,0 +1,40 @@
+{
+  "scene": {
+    "scene_id": "example_lab_workspace",
+    "task_family": "general_robot_manipulation",
+    "planner_notes": [
+      "Compose the current task from registered skills.",
+      "Do not generate coordinates or motor commands."
+    ],
+    "goal_predicates": [
+      {
+        "path": "objects.sample_vial.location",
+        "allowed_values": ["bench", "centrifuge_rack", "held"]
+      },
+      {
+        "path": "runtime.holding",
+        "allowed_values": [null, "sample_vial"]
+      },
+      {
+        "path": "runtime.robot_location",
+        "allowed_values": ["home"]
+      }
+    ],
+    "skill_contracts": []
+  },
+  "runtime": {
+    "holding": null,
+    "robot_location": "home"
+  },
+  "objects": {
+    "sample_vial": {
+      "type": "movable_object",
+      "aliases": ["vial", "sample vial", "样品瓶"],
+      "location": "bench"
+    },
+    "centrifuge_rack": {
+      "type": "placement_target",
+      "aliases": ["rack", "centrifuge rack", "离心管架"]
+    }
+  }
+}

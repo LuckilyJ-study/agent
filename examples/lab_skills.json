@@ -1,0 +1,35 @@
+{
+  "capabilities": [
+    {
+      "action_type": "pick",
+      "executor": "policy",
+      "policy_id": "pick",
+      "description": "Pick a visible movable object with the registered policy.",
+      "supports_stop": true,
+      "default_timeout_seconds": 60,
+      "default_max_attempts": 2
+    },
+    {
+      "action_type": "place",
+      "executor": "policy",
+      "policy_id": "place",
+      "description": "Place the held object at a visible destination.",
+      "supports_stop": true,
+      "default_timeout_seconds": 60,
+      "default_max_attempts": 2
+    },
+    {
+      "action_type": "inspect",
+      "executor": "policy",
+      "policy_id": "inspect",
+      "description": "Inspect or relocalize a scene entity.",
+      "supports_stop": true
+    },
+    {
+      "action_type": "move_home",
+      "executor": "robot",
+      "description": "Return the robot to its configured safe home pose.",
+      "supports_stop": true
+    }
+  ]
+}

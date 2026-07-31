@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "robot-agent-project"
+version = "0.1.0"
+description = "Generic closed-loop Agent orchestration for robot primitives and trained policies"
+requires-python = ">=3.8"
+dependencies = [
+]
+
+[project.optional-dependencies]
+langgraph = [
+  "langgraph",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project.scripts]
+robot-agent = "robot_agent.run_agent:main"
