@@ -1,6 +1,0 @@
-Metadata-Version: 2.4
-Name: robot-agent-project
-Version: 0.1.0
-Summary: Agent orchestration layer for a Pi05-based robot system
-Requires-Python: >=3.10
-Requires-Dist: langgraph

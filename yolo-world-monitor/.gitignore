@@ -1,0 +1,9 @@
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.env
+.env.*
+YOLO-World/weights/
+YOLO-World/.git/
+YOLO-World/third_party/mmyolo/.git
