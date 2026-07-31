@@ -401,3 +401,7 @@ python -m compileall -q src tests run_agent_simulation.py test_agent_simulation.
 ```
 
 更详细的模块说明和工作记录见 [docs/agent_work_report.md](docs/agent_work_report.md)。
+
+## 真机运动安全
+
+真机模式现在要求显式加载经过审核的运动安全配置，Pi05 action chunk 也必须通过独立的逐动作边界检查。默认示例配置不能获得真机执行权限。配置字段、接入代码以及防止大角度和累计旋转的说明见 [docs/safety_configuration.md](docs/safety_configuration.md)。

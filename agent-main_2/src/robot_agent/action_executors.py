@@ -22,6 +22,8 @@ class PrimitiveRobotController(Protocol):
         orientation_xyzw: list[float] | None,
         coordinate_frame: str,
         speed_m_s: float | None,
+        max_angular_speed_rad_s: float | None,
+        shortest_path: bool,
     ) -> dict[str, Any]: ...
 
     def move_linear(
@@ -78,6 +80,8 @@ class DryRunRobotController:
         orientation_xyzw: list[float] | None,
         coordinate_frame: str,
         speed_m_s: float | None,
+        max_angular_speed_rad_s: float | None,
+        shortest_path: bool,
     ) -> dict[str, Any]:
         self.state.update(
             {
@@ -87,6 +91,8 @@ class DryRunRobotController:
                     "coordinate_frame": coordinate_frame,
                 },
                 "speed_m_s": speed_m_s,
+                "max_angular_speed_rad_s": max_angular_speed_rad_s,
+                "shortest_path": shortest_path,
                 "stopped": False,
             }
         )
@@ -175,6 +181,12 @@ class RobotPrimitiveExecutor:
                     if parameters.get("speed_m_s") is not None
                     else None
                 ),
+                (
+                    float(parameters["max_angular_speed_rad_s"])
+                    if parameters.get("max_angular_speed_rad_s") is not None
+                    else None
+                ),
+                parameters.get("rotation_path") == "shortest",
             )
         if action_type == "move_linear":
             return self.controller.move_linear(

@@ -8,6 +8,10 @@ from typing import Any, Protocol
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
+from .action_safety import (
+    ActionChunkGuard,
+    ActionChunkSafetyLimits,
+)
 from .motion import parse_relative_motion_target
 from .observation import summarize_observation
 from .robot_controller import PrintRobotController, RobotController
@@ -168,6 +172,7 @@ class Pi05ServiceGateway:
         stub_chunk_size: int = 50,
         stub_action_dim: int = 7,
         allow_stub_actions: bool = False,
+        action_guard: ActionChunkGuard | None = None,
     ) -> None:
         self.endpoint = endpoint or os.getenv(
             "ROBOT_AGENT_PI05_ENDPOINT", "http://127.0.0.1:7777/predict"
@@ -178,6 +183,9 @@ class Pi05ServiceGateway:
         self.stub_chunk_size = stub_chunk_size
         self.stub_action_dim = stub_action_dim
         self.allow_stub_actions = allow_stub_actions
+        self.action_guard = action_guard or ActionChunkGuard(
+            ActionChunkSafetyLimits.normalized_simulation(stub_action_dim)
+        )
 
     def execute(self, task_text: str, step: PlanStep, retry_count: int, observation: dict[str, Any] | None = None) -> dict[str, Any]:
         observation = observation or {}
@@ -194,6 +202,66 @@ class Pi05ServiceGateway:
                     "policy_note": policy_note,
                     "robot_execution": None,
                     "note": "Fail-closed: no stub action was sent to the robot.",
+                },
+            }
+        if bool(getattr(self.robot, "hardware_ready", False)) and not (
+            self.action_guard.limits.hardware_approved
+        ):
+            return {
+                "status": "failed",
+                "reason": "ACTION_SAFETY_CONFIG_REQUIRED",
+                "command_completed": False,
+                "physical_result_verified": False,
+                "details": {
+                    "source": "pi05_service_gateway",
+                    "policy_endpoint": self.endpoint,
+                    "policy_note": policy_note,
+                    "robot_execution": None,
+                    "action_safety": {
+                        "profile_name": self.action_guard.limits.profile_name,
+                        "hardware_approved": False,
+                    },
+                    "note": (
+                        "Fail-closed: a hardware-ready controller requires an "
+                        "explicit action schema and robot-specific limits."
+                    ),
+                },
+            }
+
+        reference_values = None
+        reference_getter = getattr(self.robot, "get_action_state", None)
+        if callable(reference_getter):
+            try:
+                reference_values = reference_getter()
+            except Exception as error:
+                return {
+                    "status": "failed",
+                    "reason": "ACTION_REFERENCE_UNAVAILABLE",
+                    "command_completed": False,
+                    "physical_result_verified": False,
+                    "details": {
+                        "source": "pi05_service_gateway",
+                        "robot_execution": None,
+                        "action_safety": {"exception": repr(error)},
+                    },
+                }
+        action_safety = self.action_guard.check(
+            actions,
+            reference_values=reference_values,
+        )
+        if not action_safety.safe:
+            return {
+                "status": "failed",
+                "reason": action_safety.reason,
+                "command_completed": False,
+                "physical_result_verified": False,
+                "details": {
+                    "source": "pi05_service_gateway",
+                    "policy_endpoint": self.endpoint,
+                    "policy_note": policy_note,
+                    "robot_execution": None,
+                    "action_safety": action_safety.details or {},
+                    "note": "Fail-closed: unsafe policy actions were not sent to the robot.",
                 },
             }
         robot_summary = self.robot.execute_action_chunk(actions)
@@ -214,6 +282,7 @@ class Pi05ServiceGateway:
             "policy_note": policy_note,
             "observation_summary": summarize_observation(observation),
             "action": action,
+            "action_safety": action_safety.details or {},
             "robot_execution": robot_summary,
         }
         if policy_ok:

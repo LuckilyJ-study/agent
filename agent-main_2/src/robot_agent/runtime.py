@@ -26,7 +26,7 @@ from .control import ExecutionControl
 from .domain import WorldState
 from .local_recovery import ControllerLocalRecoveryHandler, LocalRecoveryHandler
 from .monitor import StructuredActionMonitor
-from .safety_monitor import RuntimeSafetyMonitor
+from .safety_monitor import RuntimeSafetyMonitor, SoftwareSafetyMonitor
 from .task_verifier import TaskVerifier
 from .routing import ExecutorRouter
 from .physical_target_gate import (
@@ -93,6 +93,14 @@ def build_agent_runtime(
         verifier is None or isinstance(verifier, PlaceholderActionVerifier)
     ):
         raise ValueError("hardware_mode requires a physical Action Monitor.")
+    selected_safety_monitor = safety_monitor or SoftwareSafetyMonitor()
+    if hardware_mode and not bool(
+        getattr(selected_safety_monitor, "hardware_ready", False)
+    ):
+        raise ValueError(
+            "hardware_mode requires a hardware-approved motion safety profile "
+            "with joint limits and live joint telemetry."
+        )
     state_provider = AgentStateProvider(
         perception=selected_perception,
         controller=selected_controller,
@@ -171,7 +179,7 @@ def build_agent_runtime(
         available_policies=selected_policies.describe(),
         max_replans=max_replans,
         task_store=task_store,
-        safety_monitor=safety_monitor,
+        safety_monitor=selected_safety_monitor,
         task_verifier=task_verifier,
         control=control,
         initial_world_state=initial_world_state,

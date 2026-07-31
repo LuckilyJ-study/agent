@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from typing import Any, Iterable, Literal
 
 from .motion import parse_relative_motion_target
+from .motion_safety import unit_quaternion_xyzw
 from .domain import Condition, Effect
 from .state import PlanStep
 
@@ -313,6 +315,8 @@ def _validate_xyz(value: Any, name: str, max_abs: float) -> None:
         or any(not isinstance(item, (int, float)) for item in value)
     ):
         raise CapabilityError(f"{name} must be a numeric [x, y, z] list.")
+    if any(not math.isfinite(float(item)) for item in value):
+        raise CapabilityError(f"{name} must contain only finite numbers.")
     if any(abs(float(item)) > max_abs for item in value):
         raise CapabilityError(
             f"Every {name} component must be within +/-{max_abs:g} meters."
@@ -329,14 +333,29 @@ def _validate_coordinate_frame(parameters: dict[str, Any]) -> None:
 
 def _validate_motion_options(parameters: dict[str, Any]) -> None:
     orientation = parameters.get("orientation_xyzw")
-    if orientation is not None and (
-        not isinstance(orientation, list)
-        or len(orientation) != 4
-        or any(not isinstance(item, (int, float)) for item in orientation)
-    ):
-        raise CapabilityError("orientation_xyzw must be a numeric [x,y,z,w] list.")
-    speed = parameters.get("speed_m_s")
+    if orientation is not None:
+        normalized = unit_quaternion_xyzw(orientation, tolerance=1e-3)
+        if normalized is None:
+            raise CapabilityError(
+                "orientation_xyzw must be a finite unit quaternion [x,y,z,w]."
+            )
+        parameters["orientation_xyzw"] = list(normalized)
+        rotation_path = str(parameters.setdefault("rotation_path", "shortest"))
+        if rotation_path != "shortest":
+            raise CapabilityError("rotation_path must be 'shortest'.")
+        angular_speed = parameters.setdefault("max_angular_speed_rad_s", 0.5)
+        if (
+            not isinstance(angular_speed, (int, float))
+            or not math.isfinite(float(angular_speed))
+            or not 0 < float(angular_speed) <= 1.0
+        ):
+            raise CapabilityError(
+                "max_angular_speed_rad_s must be finite, > 0, and <= 1.0."
+            )
+    speed = parameters.setdefault("speed_m_s", 0.1)
     if speed is not None and (
-        not isinstance(speed, (int, float)) or not 0 < float(speed) <= 1.0
+        not isinstance(speed, (int, float))
+        or not math.isfinite(float(speed))
+        or not 0 < float(speed) <= 1.0
     ):
-        raise CapabilityError("speed_m_s must be > 0 and <= 1.0.")
+        raise CapabilityError("speed_m_s must be finite, > 0, and <= 1.0.")

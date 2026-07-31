@@ -17,6 +17,8 @@ from robot_agent.perception import ScriptedPerceptionProvider
 from robot_agent.physical_target_gate import PhysicalPerceptionConfigurationError
 from robot_agent.policy_metadata import PolicyMetadata
 from robot_agent.runtime import build_agent_runtime
+from robot_agent.motion_safety import JointSafetyLimits, MotionSafetyLimits
+from robot_agent.safety_monitor import SoftwareSafetyMonitor
 from robot_agent.skill_grounding import SceneSkillPlanner
 
 
@@ -55,6 +57,12 @@ class _PhysicalController:
             "source": "physical_test_controller",
             "connected": True,
             "gripper": "closed",
+            "telemetry": {
+                "joint_positions_rad": [0.0],
+                "joint_velocities_rad_s": [0.0],
+                "joint_accelerations_rad_s2": [0.0],
+                "joint_torques_nm": [0.0],
+            },
         }
 
     def stop(self) -> None:
@@ -195,6 +203,23 @@ def _physical_runtime(*, localized: bool):
         ),
     )
     verifier = _PhysicalVerifier()
+    joint_limits = JointSafetyLimits(
+        position_min_rad=(-2.0,),
+        position_max_rad=(2.0,),
+        max_velocity_rad_s=(1.0,),
+        max_acceleration_rad_s2=(2.0,),
+        max_torque_nm=(10.0,),
+        max_cumulative_motion_rad=(1.0,),
+        joint_names=("test_joint",),
+    )
+    safety_monitor = SoftwareSafetyMonitor(
+        limits=MotionSafetyLimits(
+            joint_limits=joint_limits,
+            require_joint_telemetry=True,
+            hardware_approved=True,
+            profile_name="physical-integration-test",
+        )
+    )
     runtime = build_agent_runtime(
         planner,
         controller=controller,
@@ -204,6 +229,7 @@ def _physical_runtime(*, localized: bool):
         initial_world_state=scene,
         dry_run=False,
         hardware_mode=True,
+        safety_monitor=safety_monitor,
         max_replans=0,
     )
     return runtime, controller, perception, policy, verifier

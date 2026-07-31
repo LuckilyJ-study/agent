@@ -266,6 +266,17 @@ DEMO_WORKSPACE_SCENE: dict[str, Any] = {
                 },
             },
             {
+                "affordance_id": "tool_rack_approach",
+                "kind": "safe_waypoint",
+                "entity": "tool_rack",
+                "requires_holding": "brush",
+                "parameters": {
+                    "position_xyz_m": [0.35, -0.05, 0.25],
+                    "orientation_xyzw": [0.0, 0.0, 0.0, 1.0],
+                    "coordinate_frame": "robot_base",
+                },
+            },
+            {
                 "affordance_id": "tool_rack_place",
                 "kind": "placement_pose",
                 "entity": "tool_rack",

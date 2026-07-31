@@ -1,0 +1,37 @@
+{
+  "motion": {
+    "profile_name": "EXAMPLE_NOT_APPROVED_FOR_HARDWARE",
+    "hardware_approved": false,
+    "workspace_min_xyz_m": [-1.0, -1.0, 0.0],
+    "workspace_max_xyz_m": [1.0, 1.0, 1.5],
+    "max_linear_step_m": 0.3,
+    "max_linear_speed_m_s": 0.25,
+    "max_orientation_step_degrees": 30.0,
+    "max_cumulative_orientation_degrees": 180.0,
+    "max_angular_speed_rad_s": 0.5,
+    "quaternion_norm_tolerance": 0.001,
+    "require_shortest_rotation_path": true,
+    "require_joint_telemetry": true,
+    "joint_limits": {
+      "joint_names": ["joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6", "joint_7"],
+      "position_min_rad": [-2.0, -2.0, -2.0, -2.0, -2.0, -2.0, -2.0],
+      "position_max_rad": [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0],
+      "max_velocity_rad_s": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+      "max_acceleration_rad_s2": [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0],
+      "max_torque_nm": [10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0],
+      "max_cumulative_motion_rad": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+    }
+  },
+  "policy_action": {
+    "profile_name": "EXAMPLE_NOT_APPROVED_FOR_HARDWARE",
+    "hardware_approved": false,
+    "semantics": "joint_position_rad",
+    "dimension_names": ["joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6", "joint_7"],
+    "lower_bounds": [-2.0, -2.0, -2.0, -2.0, -2.0, -2.0, -2.0],
+    "upper_bounds": [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0],
+    "max_step_changes": [0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05],
+    "max_cumulative_changes": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+    "max_chunk_size": 100,
+    "require_reference": true
+  }
+}

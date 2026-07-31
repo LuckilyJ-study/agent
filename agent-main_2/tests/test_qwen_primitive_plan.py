@@ -199,7 +199,7 @@ class DynamicQwenPlanningTests(unittest.TestCase):
         )
 
         self.assertEqual(result.status, "completed")
-        self.assertEqual(len(result.memory.completed_steps), 10)
+        self.assertEqual(len(result.memory.completed_steps), 11)
         values = result.memory.world_state["values"]
         self.assertEqual(values["objects"]["brush"]["location"], "tool_rack")
         self.assertEqual(values["runtime"]["gripper"], "open")
@@ -503,8 +503,9 @@ def _place_brush_on_rack_plan():
     plan = _take_brush_plan()
     plan.extend(
         [
-            _move_step(9, "tool_rack_place"),
-            _gripper_step(10, "open_gripper", "tool_rack_place"),
+            _move_step(9, "tool_rack_approach"),
+            _move_step(10, "tool_rack_place"),
+            _gripper_step(11, "open_gripper", "tool_rack_place"),
         ]
     )
     return plan

@@ -459,6 +459,12 @@ class ClosedLoopAgent:
                         error_type=action["reason"],
                     )
                 else:
+                    # PhysicalTargetGate may add calibrated XYZ grounding. Re-run
+                    # the envelope immediately before routing so those final
+                    # execution parameters cannot bypass workspace checks.
+                    safety = self.safety_monitor.before_action(step, before_state)
+                    if not safety.safe:
+                        self._safety_stop(memory, world, safety.reason)
                     try:
                         route = self.router.route(step)
                         executor = route.executor
