@@ -264,7 +264,40 @@ class Pi05ServiceGateway:
                     "note": "Fail-closed: unsafe policy actions were not sent to the robot.",
                 },
             }
-        robot_summary = self.robot.execute_action_chunk(actions)
+        try:
+            robot_summary = self.robot.execute_action_chunk(actions)
+        except Exception as error:
+            return {
+                "status": "failed",
+                "reason": "ROBOT_EXECUTION_FAILED",
+                "command_completed": False,
+                "physical_result_verified": False,
+                "details": {
+                    "source": "pi05_service_gateway",
+                    "policy_endpoint": self.endpoint,
+                    "policy_note": policy_note,
+                    "robot_execution": None,
+                    "exception": repr(error),
+                },
+            }
+        if isinstance(robot_summary, dict) and (
+            robot_summary.get("status") == "failed"
+            or robot_summary.get("command_completed") is False
+        ):
+            return {
+                "status": "failed",
+                "reason": str(
+                    robot_summary.get("reason") or "ROBOT_EXECUTION_FAILED"
+                ),
+                "command_completed": False,
+                "physical_result_verified": False,
+                "details": {
+                    "source": "pi05_service_gateway",
+                    "policy_endpoint": self.endpoint,
+                    "policy_note": policy_note,
+                    "robot_execution": robot_summary,
+                },
+            }
 
         first_action = [float(value) for value in actions[0]] if actions else []
         action = {

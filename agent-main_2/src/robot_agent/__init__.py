@@ -26,6 +26,14 @@ from .action_safety import ActionChunkGuard, ActionChunkSafetyLimits
 from .motion_safety import JointSafetyLimits, MotionSafetyLimits
 from .safety_monitor import SoftwareSafetyMonitor
 from .safety_config import SafetyProfiles, load_safety_profiles
+from .libero_integration import (
+    LiberoActionChunkController,
+    LiberoHttpClient,
+    LiberoPerceptionProvider,
+    LiberoServiceError,
+    LiberoTaskVerifier,
+    build_libero_action_guard,
+)
 
 __all__ = [
     "ClosedLoopAgent",
@@ -55,4 +63,10 @@ __all__ = [
     "SoftwareSafetyMonitor",
     "SafetyProfiles",
     "load_safety_profiles",
+    "LiberoActionChunkController",
+    "LiberoHttpClient",
+    "LiberoPerceptionProvider",
+    "LiberoServiceError",
+    "LiberoTaskVerifier",
+    "build_libero_action_guard",
 ]
